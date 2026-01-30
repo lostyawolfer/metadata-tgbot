@@ -11,7 +11,7 @@ TEMP_DIR = Path('temp')
 TEMP_DIR.mkdir(exist_ok=True)
 
 
-async def download_file(bot: Bot, file_id: str, user_id: int) -> str:
+async def download_file(bot: Bot, file_id: str, user_id: int) -> str | None:
     try:
         bot_init.log.info(f"downloading file for user {user_id}")
         file = await bot.get_file(file_id)
@@ -21,18 +21,10 @@ async def download_file(bot: Bot, file_id: str, user_id: int) -> str:
         bot_init.log.debug(f"using local api: {bot_init.using_local_api}")
 
         if bot_init.using_local_api:
-            # path format: /var/lib/telegram-bot-api/{token}/{relative_path}
-            parts = file.file_path.split('/', 5)
-            # parts: ['', 'var', 'lib', 'telegram-bot-api', token, relative_path]
-            if len(parts) == 6:
-                relative_path = parts[5]
-            else:
-                relative_path = file.file_path
-
-            bot_init.log.debug(f"extracted relative path: {relative_path}")
-            file_content = await bot.download_file(relative_path)
-            async with aiofiles.open(file_path, 'wb') as f:
-                await f.write(file_content.read())
+            # simply copy the file from the local storage to your temp dir
+            async with aiofiles.open(file.file_path, 'rb') as src:
+                async with aiofiles.open(file_path, 'wb') as dest:
+                    await dest.write(await src.read())
         else:
             await bot.download_file(file.file_path, file_path)
 
@@ -44,28 +36,17 @@ async def download_file(bot: Bot, file_id: str, user_id: int) -> str:
         else:
             raise e
 
-
-
 async def download_photo(bot: Bot, file_id: str, user_id: int) -> bytes:
     bot_init.log.info(f"downloading photo for user {user_id}")
     file = await bot.get_file(file_id)
-    temp_path = TEMP_DIR / f"{user_id}_photo.jpg"
     data = b''
 
     if bot_init.using_local_api:
-        # path format: /var/lib/telegram-bot-api/{token}/{relative_path}
-        parts = file.file_path.split('/', 5)
-        # parts: ['', 'var', 'lib', 'telegram-bot-api', token, relative_path]
-        if len(parts) == 6:
-            relative_path = parts[5]
-        else:
-            relative_path = file.file_path
-        bot_init.log.debug(f"extracted relative path: {relative_path}")
-        file_content = await bot.download_file(relative_path)
-        async with aiofiles.open(temp_path, 'wb') as f:
-            await f.write(file_content.read())
-
+        # read directly from the path provided by local api
+        async with aiofiles.open(file.file_path, 'rb') as f:
+            data = await f.read()
     else:
+        temp_path = TEMP_DIR / f"{user_id}_photo.jpg"
         await bot.download_file(file.file_path, temp_path)
         async with aiofiles.open(temp_path, 'rb') as f:
             data = await f.read()
