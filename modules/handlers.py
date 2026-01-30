@@ -105,14 +105,12 @@ async def handle_audio(msg: Message, bot: Bot):
         sent = await msg.answer_photo(
             art_file,
             caption=format_info(metadata['title'], metadata['artist']),
-            reply_markup=build_keyboard(),
-            parse_mode=ParseMode.MARKDOWN
+            reply_markup=build_keyboard()
         )
     else:
         sent = await msg.answer(
             format_info(metadata['title'], metadata['artist']),
-            reply_markup=build_keyboard(),
-            parse_mode=ParseMode.MARKDOWN
+            reply_markup=build_keyboard()
         )
 
     await bot.delete_message(msg.chat.id, downloading_msg.message_id)
@@ -197,8 +195,7 @@ async def update_info_message(bot: Bot, session: sm.EditSession, chat_id: int):
                 message_id=session.info_message_id,
                 media=InputMediaPhoto(
                     media=art_file,
-                    caption=format_info(session.title, session.artist),
-                    parse_mode=ParseMode.MARKDOWN,
+                    caption=format_info(session.title, session.artist)
                 ),
                 reply_markup=build_keyboard(session.trim_start, session.trim_end),
             )
@@ -207,8 +204,7 @@ async def update_info_message(bot: Bot, session: sm.EditSession, chat_id: int):
                 format_info(session.title, session.artist),
                 chat_id=chat_id,
                 message_id=session.info_message_id,
-                reply_markup=build_keyboard(session.trim_start, session.trim_end),
-                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=build_keyboard(session.trim_start, session.trim_end)
             )
     except TelegramBadRequest as e:
         if "message is not modified" in e.message:
