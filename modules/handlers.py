@@ -39,7 +39,7 @@ def build_keyboard(trim_start: float = 0, trim_end: float | None = None):
 
 
 def format_info(title: str, artist: str) -> str:
-    return f"**{title}**\nby {artist}"
+    return f"{title}\nby {artist}"
 
 
 def format_time(seconds: float) -> str:
