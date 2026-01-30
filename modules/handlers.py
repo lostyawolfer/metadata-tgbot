@@ -1,5 +1,6 @@
 from aiogram import Router, F, Bot
 from aiogram.exceptions import TelegramBadRequest
+from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery, BufferedInputFile, InputMediaPhoto, ReplyKeyboardMarkup, \
     KeyboardButton, ReplyKeyboardRemove, ForceReply
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -58,6 +59,22 @@ def get_none_keyboard():
         one_time_keyboard=True
     )
 
+
+@router.message(Command(commands=["start"]))
+async def start(msg: Message):
+    await msg.answer(
+        """<b><u>lostya's audio metadata editor</u></b>
+меняет данные аудиофайла и позволяет его обрезать
+
+<b><i>КАК ПОЛЬЗОВАТЬСЯ:</i></b>
+<blockquote>- скинь аудио
+- бот покажет тебе текущих автора, название и обложку аудио
+- (предел 2 гб)
+- можно будет изменить автора название и обложку
+- можно будет обрезать аудио в начале и в конце
+- обрезка поддерживает нецелые значения между секундами</blockquote>""",
+        parse_mode="HTML",
+    )
 
 @router.message(F.audio)
 async def handle_audio(msg: Message, bot: Bot):
